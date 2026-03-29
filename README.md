@@ -1,155 +1,218 @@
 # Airdrop Manager
 
-A decentralized smart contract built on the **Stellar blockchain** using the **Soroban SDK**, designed to manage token airdrop campaigns in a transparent, tamper-proof, and efficient manner.
+Production-style full-stack decentralized application for creating and managing token airdrop campaigns on Stellar Soroban.
 
----
+## Overview
+
+Airdrop Manager combines:
+
+- A Soroban smart contract backend written in Rust
+- A React + Freighter wallet frontend for campaign operations
+- On-chain tracking of campaign and claim analytics
+
+The platform is designed to make token distribution transparent, auditable, and resistant to double-claim abuse.
 
 ## Table of Contents
 
-- [Project Title](#airdrop-manager)
-- [Project Description](#project-description)
-- [Project Vision](#project-vision)
-- [Key Features](#key-features)
-- [Contract Functions](#contract-functions)
-- [Data Structures](#data-structures)
-- [Future Scope](#future-scope)
+- [Architecture](#architecture)
+- [Key Capabilities](#key-capabilities)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [Smart Contract API](#smart-contract-api)
+- [Data Model](#data-model)
+- [Local Development](#local-development)
+- [Testing Flow](#testing-flow)
+- [Deployment](#deployment)
+- [Contract Details](#contract-details)
+- [Frontend Preview](#frontend-preview)
+- [Roadmap](#roadmap)
+- [License](#license)
 
----
+## Architecture
 
-## Project Description
+### Frontend Layer
 
-**Airdrop Manager** is a Soroban-based smart contract that enables project administrators to create and manage token airdrop campaigns on the Stellar network. Each campaign defines a fixed token reward per eligible address and a total supply cap. Users can claim their allocation from any active campaign — with on-chain guarantees preventing double-claiming.
+- React dashboard for campaign creation, claiming, querying, and stats
+- Freighter integration for wallet connection and transaction signing
+- Soroban RPC transaction lifecycle: build -> prepare -> sign -> submit -> poll
 
-The contract maintains a global statistics ledger, tracking total campaigns created, total individual claims processed, and total tokens distributed — giving both admins and community members full transparency into distribution activity.
+### Smart Contract Layer
 
----
+- Campaign lifecycle and claim rules fully on-chain
+- One-claim-per-address-per-campaign enforcement
+- Global statistics ledger for total campaigns, total claims, and distributed amount
 
-## Project Vision
+### Trust Model
 
-Token airdrops are a powerful mechanism for community bootstrapping, reward distribution, and decentralized governance participation — but they are often plagued by opaque off-chain processes, double-claim vulnerabilities, and no auditability.
+- Business rules enforced by contract state, not by frontend assumptions
+- Publicly verifiable campaign state and claim records on Stellar network
 
-**Airdrop Manager** aims to bring trust and transparency to the airdrop lifecycle by:
+## Key Capabilities
 
-- Moving the entire claim and campaign lifecycle **on-chain**
-- Ensuring **one claim per address per campaign** via contract-enforced rules
-- Providing **real-time, publicly verifiable** distribution statistics
-- Giving admins granular control over campaign activation and deactivation
-- Laying the groundwork for **fully permissionless, community-driven** airdrop infrastructure
+- Create campaigns with fixed claim amount and supply cap
+- Claim from active campaigns with signature authorization
+- Manual campaign deactivation
+- Auto-deactivation when supply is exhausted
+- Check whether an address has already claimed
+- View detailed campaign state
+- View global airdrop analytics
 
----
+## Tech Stack
 
-## Key Features
+### Smart Contract
 
-| Feature | Description |
-|---|---|
-| **Campaign Creation** | Admins can launch airdrop campaigns with a defined per-claim token amount and total supply cap |
-| **Claim Enforcement** | Each wallet address can claim from a campaign exactly once — double-claims are rejected on-chain |
-| **Auto-Deactivation** | Campaigns automatically deactivate when fully distributed, preventing over-distribution |
-| **Admin Control** | Admins can manually deactivate any active campaign at any time |
-| **Global Statistics** | Platform-wide stats track total campaigns, claims, and tokens distributed |
-| **Claim Verification** | Anyone can query whether a specific address has claimed from a given campaign |
-| **Authorization** | Claimer address authorization is enforced using Soroban's `require_auth()` |
+- Rust
+- Soroban SDK
+- Soroban CLI
 
----
+### Frontend
 
-## Contract Functions
+- React (Create React App)
+- @stellar/stellar-sdk
+- @stellar/freighter-api
+- CSS-based responsive UI with light/dark theming
+
+### Deployment
+
+- Vercel or Netlify for frontend
+- Soroban Testnet/Mainnet for contract deployment
+
+## Repository Structure
+
+```text
+Airdrop-Manager/
+├── contract/
+│   ├── Cargo.toml
+│   └── contracts/contract/src/lib.rs
+├── public/
+├── src/
+│   ├── components/
+│   │   ├── Freighter.js
+│   │   ├── Soroban.js
+│   │   ├── Header.js
+│   │   ├── CreateCampaign.js
+│   │   ├── ClaimAirdrop.js
+│   │   ├── DeactivateCampaign.js
+│   │   ├── ViewCampaign.js
+│   │   └── ViewStats.js
+│   ├── App.js
+│   └── App.css
+├── package.json
+└── README.md
+```
+
+## Smart Contract API
 
 ### `create_campaign(env, token_amount, total_supply) -> u64`
-Creates a new airdrop campaign. Returns the unique `campaign_id`.
 
-- `token_amount`: Number of tokens each eligible address receives per claim
-- `total_supply`: Maximum total tokens available for the campaign
-- Validates that `token_amount > 0`, `total_supply > 0`, and `token_amount <= total_supply`
+Creates a campaign and returns `campaign_id`.
 
----
+Validation:
+
+- `token_amount > 0`
+- `total_supply > 0`
+- `token_amount <= total_supply`
 
 ### `claim_airdrop(env, campaign_id, claimer)`
-Allows a user to claim tokens from an active campaign.
 
-- Requires `claimer` authorization via `require_auth()`
-- Rejects if the address has already claimed from this campaign
-- Rejects if the campaign is inactive or supply is exhausted
-- Auto-deactivates the campaign when fully distributed
+Processes a claim for `claimer`.
 
----
+Rules:
+
+- `claimer.require_auth()` required
+- Rejects duplicate claim for same campaign/address
+- Rejects inactive campaign
+- Rejects over-cap claims
+- Auto-deactivates when campaign reaches max distribution
 
 ### `deactivate_campaign(env, campaign_id)`
-Admin function to manually stop an active campaign from accepting further claims.
 
-- Panics if the campaign is already inactive
-
----
+Manually deactivates an active campaign.
 
 ### `view_campaign(env, campaign_id) -> Campaign`
-Returns the full details of a campaign by its ID. Returns a default zeroed-out struct if the campaign does not exist.
 
----
+Returns full campaign details.
 
 ### `view_stats(env) -> AirdropStats`
-Returns platform-wide airdrop statistics including total campaigns, total claims, and total tokens distributed.
 
----
+Returns aggregate platform stats.
 
 ### `has_claimed(env, campaign_id, claimer) -> bool`
-Returns `true` if the given address has already claimed from the specified campaign, `false` otherwise.
 
----
+Returns whether `claimer` has already claimed in `campaign_id`.
 
-## Data Structures
+## Data Model
 
 ### `Campaign`
+
 ```rust
 pub struct Campaign {
-    pub campaign_id: u64,    // Unique identifier
-    pub token_amount: u64,   // Tokens per claim
-    pub total_supply: u64,   // Max tokens for this campaign
-    pub distributed: u64,    // Tokens distributed so far
-    pub is_active: bool,     // Whether claims are still accepted
-    pub created_at: u64,     // Ledger timestamp of creation
+    pub campaign_id: u64,
+    pub token_amount: u64,
+    pub total_supply: u64,
+    pub distributed: u64,
+    pub is_active: bool,
+    pub created_at: u64,
 }
 ```
 
 ### `AirdropStats`
+
 ```rust
 pub struct AirdropStats {
-    pub total_campaigns: u64,    // Total campaigns ever created
-    pub total_claimed: u64,      // Total individual claims processed
-    pub total_tokens_dist: u64,  // Total tokens distributed across all campaigns
+    pub total_campaigns: u64,
+    pub total_claimed: u64,
+    pub total_tokens_dist: u64,
 }
 ```
 
----
-
-## Future Scope
-
-| Enhancement | Description |
-|---|---|
-| **Merkle Proof Whitelisting** | Restrict claims to a pre-approved whitelist using Merkle tree verification — only addresses included in the Merkle root can claim |
-| **Time-Bounded Campaigns** | Add `start_time` and `end_time` fields to campaigns so claims are only valid within a defined window |
-| **Multi-Token Support** | Integrate with the Stellar Asset Contract (SAC) to support actual token transfers upon claim, not just accounting |
-| **Vesting Schedules** | Allow token claims to be released over multiple claim events rather than a single lump sum |
-| **Tiered Rewards** | Support multiple reward tiers within a single campaign (e.g., early claimers get more) |
-| **Role-Based Access Control** | Introduce formal admin roles with multi-sig requirements for sensitive operations like campaign creation and deactivation |
-| **Campaign Metadata** | Add IPFS-linked metadata to campaigns for human-readable names, logos, and descriptions |
-| **Cross-Contract Composability** | Expose claim hooks so other contracts (e.g., governance, staking) can react to airdrop claim events |
-
----
-
-## Getting Started
+## Local Development
 
 ### Prerequisites
 
-- [Rust](https://www.rust-lang.org/tools/install)
-- [Soroban CLI](https://soroban.stellar.org/docs/getting-started/setup)
-- Stellar Testnet/Mainnet account
+- Rust toolchain + `wasm32-unknown-unknown` target
+- Soroban CLI
+- Node.js (18+ recommended)
+- Freighter wallet extension
+- Testnet funded wallet (Friendbot)
 
-### Build
+### 1) Smart Contract: Build
 
 ```bash
+cd contract
 cargo build --target wasm32-unknown-unknown --release
 ```
 
-### Deploy
+### 2) Frontend: Install and Run
+
+```bash
+npm install
+npm start
+```
+
+The app runs locally and connects through Freighter for signing.
+
+### 3) Frontend Contract Configuration
+
+Set the deployed contract address in:
+
+- `src/components/Soroban.js`
+
+## Testing Flow
+
+Recommended end-to-end validation sequence:
+
+1. Connect wallet
+2. Create campaign (for example: 100 token amount, 1000 total supply)
+3. View campaign and confirm initial state
+4. Claim from same wallet once and verify success
+5. Attempt second claim from same wallet and verify rejection
+6. Check `has_claimed` for the wallet
+7. View global stats and verify updated counters
+
+## Deployment
+
+### Contract Deployment
 
 ```bash
 soroban contract deploy \
@@ -158,40 +221,35 @@ soroban contract deploy \
   --network testnet
 ```
 
-### Invoke Example
+### Frontend Deployment (Vercel / Netlify)
 
-```bash
-# Create a campaign (1000 tokens per claim, 100000 total supply)
-soroban contract invoke \
-  --id <CONTRACT_ID> \
-  --source <ADMIN_SECRET> \
-  --network testnet \
-  -- create_campaign \
-  --token_amount 1000 \
-  --total_supply 100000
+Build settings:
 
-# Claim airdrop
-soroban contract invoke \
-  --id <CONTRACT_ID> \
-  --source <USER_SECRET> \
-  --network testnet \
-  -- claim_airdrop \
-  --campaign_id 1 \
-  --claimer <USER_ADDRESS>
-```
+- Build command: `npm run build`
+- Output directory: `build`
 
----
-## Contract Details:
+After deployment, share the generated HTTPS URL with users. They must use Freighter on the same network as your contract deployment.
 
-Contract ID: CD763ITNHCRXXUANJDM4I4ES2KH6JLLXS2M5WZRW4C6I6RCNS2E6YJQX 
-<img width="1908" height="1055" alt="image" src="https://github.com/user-attachments/assets/74bc5fbf-d989-4163-956e-9551d558a8d2" />
+## Contract Details
 
-## Frontend Interface Preview
+- Network: Stellar Testnet
+- Contract ID: `CD763ITNHCRXXUANJDM4I4ES2KH6JLLXS2M5WZRW4C6I6RCNS2E6YJQX`
 
-The screenshot below highlights the Airdrop Manager web interface, including wallet connectivity and campaign management workflows.
-<img width="1917" height="1054" alt="image" src="https://github.com/user-attachments/assets/a5ee7982-9066-43e6-9878-041def34997f" />
+<img width="1908" height="1055" alt="Contract Details" src="https://github.com/user-attachments/assets/74bc5fbf-d989-4163-956e-9551d558a8d2" />
 
+## Frontend Preview
+
+<img width="1917" height="1054" alt="Airdrop Manager Frontend" src="https://github.com/user-attachments/assets/a5ee7982-9066-43e6-9878-041def34997f" />
+
+## Roadmap
+
+- Whitelist support (Merkle proof)
+- Time-bounded campaigns
+- Role-based admin controls
+- Multi-token transfer integration via Stellar Asset Contract (SAC)
+- Campaign metadata support (IPFS)
+- Advanced analytics dashboard
 
 ## License
 
-This project is open-source and available under the [MIT License](LICENSE).
+This project is open-source and available under the MIT License.
