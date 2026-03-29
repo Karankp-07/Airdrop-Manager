@@ -36,13 +36,10 @@ export const ViewStats = () => {
             {stats ? (
             <div>
                 {statRows.map(([label, value]) => (
-                <div
-                    key={label}
-                    className="flex justify-between border-b border-blue-100 py-1 text-sm"
-                >
-                    <span className="font-semibold">{label}</span>
-                    <span>{String(value)}</span>
-                </div>
+                    <div key={label} className="kv-row">
+                        <span className="kv-label">{label}</span>
+                        <span className="kv-value">{String(value)}</span>
+                    </div>
                 ))}
             </div>
             ) : (

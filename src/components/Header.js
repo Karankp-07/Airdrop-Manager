@@ -6,7 +6,7 @@ import {
     getRequestAccess,
 } from "./Freighter";
 
-const Header = ({ pubKey, setPubKey }) => {
+const Header = ({ pubKey, setPubKey, theme, setTheme }) => {
     const [connected, setConnected] = useState(false);
     const [balance, setBalance] = useState("0");
 
@@ -33,35 +33,42 @@ const Header = ({ pubKey, setPubKey }) => {
     };
 
     return (
-        <div className="bg-gray-300 h-20 flex justify-between items-center px-4 sm:px-10">
-        <div className="text-xl sm:text-3xl font-bold">Airdrop Manager</div>
+        <header className="app-header">
+            <div className="brand-block">
+                <div className="brand-title">Airdrop Manager</div>
+                <div className="brand-subtitle">Soroban campaign console</div>
+            </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
-            {pubKey && (
-            <>
-                <div className="p-2 bg-gray-50 border rounded-md text-sm">
-                {`${pubKey.slice(0, 4)}...${pubKey.slice(-4)}`}
-                </div>
+            <div className="header-actions">
+                {pubKey && (
+                    <>
+                        <div className="info-chip">
+                            {`${pubKey.slice(0, 4)}...${pubKey.slice(-4)}`}
+                        </div>
 
-                <div className="p-2 bg-gray-50 border rounded-md text-sm">
-                Balance: {balance} XLM
-                </div>
-            </>
-            )}
+                        <div className="info-chip">
+                            Balance: {balance} XLM
+                        </div>
+                    </>
+                )}
 
-            <button
-            onClick={connectWallet}
-            disabled={connected}
-            className={`text-sm sm:text-xl w-36 sm:w-52 rounded-md p-2 sm:p-4 font-bold text-white ${
-                connected
-                ? "bg-green-500 cursor-not-allowed"
-                : "bg-blue-400 hover:bg-blue-500"
-            }`}
-            >
-            {connected ? "Connected" : "Connect Wallet"}
-            </button>
-        </div>
-        </div>
+                <button
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="theme-toggle"
+                    aria-label="Toggle theme"
+                >
+                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                </button>
+
+                <button
+                    onClick={connectWallet}
+                    disabled={connected}
+                    className={`wallet-btn ${connected ? "wallet-btn-connected" : "wallet-btn-connect"}`}
+                >
+                    {connected ? "Connected" : "Connect Wallet"}
+                </button>
+            </div>
+        </header>
     );
 };
 
