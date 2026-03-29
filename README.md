@@ -186,6 +186,11 @@ soroban contract invoke \
 Contract ID: CD763ITNHCRXXUANJDM4I4ES2KH6JLLXS2M5WZRW4C6I6RCNS2E6YJQX 
 <img width="1908" height="1055" alt="image" src="https://github.com/user-attachments/assets/74bc5fbf-d989-4163-956e-9551d558a8d2" />
 
+## Frontend Interface Preview
+
+The screenshot below highlights the Airdrop Manager web interface, including wallet connectivity and campaign management workflows.
+<img width="1917" height="1054" alt="image" src="https://github.com/user-attachments/assets/a5ee7982-9066-43e6-9878-041def34997f" />
+
 
 ## License
 
