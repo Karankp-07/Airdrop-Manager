@@ -14,7 +14,7 @@ function App() {
     const [pubKey, _setPubKey] = useState("");
     const [theme, setTheme] = useState(() => {
         const storedTheme = localStorage.getItem("airdrop-ui-theme");
-        return storedTheme === "dark" ? "dark" : "light";
+        return storedTheme === "light" ? "light" : "dark";
     });
 
     useEffect(() => {
