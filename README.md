@@ -246,7 +246,10 @@ After deployment, share the generated HTTPS URL with users. They must use Freigh
 
 ## Frontend Preview
 
-<img width="1917" height="1054" alt="Airdrop Manager Frontend" src="https://github.com/user-attachments/assets/a5ee7982-9066-43e6-9878-041def34997f" />
+<img width="1897" height="1050" alt="image" src="https://github.com/user-attachments/assets/094bf999-a1ad-47e2-9f5e-0e8427f111ea" />
+<br /><br /><br />
+<img width="1885" height="1055" alt="image" src="https://github.com/user-attachments/assets/08aeb4d6-686d-4088-9092-93025285b653" />
+
 
 ## Roadmap
 
