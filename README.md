@@ -14,6 +14,7 @@ The platform is designed to make token distribution transparent, auditable, and 
 
 ## Table of Contents
 
+- [Live Demo](#live-demo)
 - [Architecture](#architecture)
 - [Key Capabilities](#key-capabilities)
 - [Tech Stack](#tech-stack)
@@ -27,6 +28,12 @@ The platform is designed to make token distribution transparent, auditable, and 
 - [Frontend Preview](#frontend-preview)
 - [Roadmap](#roadmap)
 - [License](#license)
+
+## Live Demo
+
+Try the deployed frontend here:
+
+https://airdrop-manager-nine.vercel.app/
 
 ## Architecture
 
